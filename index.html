@@ -43,33 +43,98 @@ body::before{
 /* ── LAYOUT ── */
 #app{display:flex;flex-direction:column;height:100vh;position:relative;z-index:1;}
 #topbar{
-  display:flex;align-items:center;gap:16px;padding:8px 16px;
-  border-bottom:1px solid var(--border);background:rgba(4,10,15,.95);
-  backdrop-filter:blur(8px);flex-shrink:0;flex-wrap:wrap;
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  border-bottom:1px solid var(--border);background:rgba(4,10,15,.97);
+  backdrop-filter:blur(8px);flex-shrink:0;
 }
-#main{display:flex;flex:1;overflow:hidden;}
+#main{display:flex;flex:1;overflow:hidden;position:relative;}
 #sidebar{
   width:220px;flex-shrink:0;border-right:1px solid var(--border);
-  background:rgba(7,17,26,.9);overflow-y:auto;padding:12px;
+  background:rgba(7,17,26,.97);overflow-y:auto;padding:12px;
+  transition:transform .25s ease;
 }
-#content{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px;}
+#content{
+  flex:1;overflow-y:auto;padding:12px;
+  display:flex;flex-direction:column;gap:12px;
+  /* スマホ: ボトムナビ分の余白 */
+}
+/* ボトムナビ（スマホ専用） */
+#bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(4,10,15,.97);border-top:1px solid var(--border);
+  z-index:60;
+}
+.bnav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 4px;font-size:9px;color:var(--text3);font-family:var(--mono);
+  cursor:pointer;border:none;background:transparent;transition:color .15s;
+  min-height:52px;
+}
+.bnav-item .bnav-icon{font-size:18px;margin-bottom:2px;}
+.bnav-item.active{color:var(--accent);}
+.bnav-item.active .bnav-icon{filter:drop-shadow(0 0 4px var(--accent));}
+/* サイドバーオーバーレイ（スマホ） */
+#sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:49;
+}
+/* ハンバーガーボタン */
+#menu-btn{
+  display:none;padding:8px;background:transparent;border:1px solid var(--border);
+  border-radius:6px;color:var(--text2);cursor:pointer;font-size:16px;flex-shrink:0;
+}
 
 /* ── TOPBAR ── */
-.logo{font-family:var(--mono);font-size:18px;color:var(--accent);letter-spacing:.15em;font-weight:700;white-space:nowrap;}
-.logo span{color:var(--text3);font-size:11px;margin-left:8px;letter-spacing:.05em;}
+.logo{font-family:var(--mono);font-size:16px;color:var(--accent);letter-spacing:.12em;font-weight:700;white-space:nowrap;}
+.logo span{color:var(--text3);font-size:10px;margin-left:6px;letter-spacing:.04em;}
 .topstat{
-  display:flex;flex-direction:column;padding:4px 12px;background:var(--bg3);
-  border:1px solid var(--border);border-radius:4px;min-width:80px;
+  display:flex;flex-direction:column;padding:4px 10px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:4px;min-width:70px;
 }
-.topstat .lbl{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.1em;}
-.topstat .val{font-size:15px;font-weight:700;font-family:var(--mono);}
+.topstat .lbl{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.08em;}
+.topstat .val{font-size:14px;font-weight:700;font-family:var(--mono);}
 .ap-btn{
-  padding:6px 16px;background:var(--accent2);color:var(--bg);font-weight:700;
+  padding:8px 14px;background:var(--accent2);color:var(--bg);font-weight:700;
   border:none;border-radius:4px;cursor:pointer;font-size:12px;font-family:var(--mono);
-  letter-spacing:.05em;transition:all .15s;
+  letter-spacing:.04em;transition:all .15s;white-space:nowrap;min-height:36px;
 }
 .ap-btn:hover{background:var(--accent);}
 .ap-btn:disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed;}
+/* topbarのmarket-tickerはスマホで非表示 */
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  #menu-btn{display:flex;align-items:center;justify-content:center;}
+  #sidebar{
+    position:fixed;top:0;left:0;bottom:0;z-index:50;
+    transform:translateX(-100%);width:240px;
+    border-right:1px solid var(--border2);
+    box-shadow:4px 0 24px rgba(0,0,0,.5);
+  }
+  #sidebar.open{transform:translateX(0);}
+  #sidebar-overlay.show{display:block;}
+  #bottom-nav{display:flex;}
+  #main-tabs{display:none !important;}
+  #content{padding:10px 10px 70px;} /* ボトムナビ分の余白 */
+  #market-ticker{display:none;}
+  .logo span{display:none;}
+  #turn-limit-bar{display:none;}
+  .topstat{min-width:55px;padding:3px 7px;}
+  .topstat .val{font-size:12px;}
+  .grid2{grid-template-columns:1fr !important;}
+  .grid3{grid-template-columns:1fr 1fr !important;}
+  .card{padding:10px;}
+  .phase-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;}
+  .phase-step::before{display:none;}
+  .ps-lbl{font-size:8px;}
+  /* フェーズヘッダーのボタンを縦並びに */
+  #phase-header-btns{flex-direction:column;align-items:flex-end !important;}
+}
+@media(min-width:701px){
+  #menu-btn{display:none !important;}
+  #bottom-nav{display:none !important;}
+  #sidebar-overlay{display:none !important;}
+}
 
 /* ── SECTION HEADERS ── */
 .sec-hdr{
@@ -348,6 +413,7 @@ h3.section-title{font-size:12px;color:var(--text);margin-bottom:10px;font-weight
 
 <!-- TOP BAR -->
 <div id="topbar">
+  <button id="menu-btn" onclick="G.toggleSidebar()">☰</button>
   <div class="logo">DEVELOPE<span>— 場所の未来を設計するゲーム</span></div>
   <div class="topstat">
     <span class="lbl">SEASON</span>
@@ -361,25 +427,31 @@ h3.section-title{font-size:12px;color:var(--text);margin-bottom:10px;font-weight
     <span id="tl-icon">📅</span>
     <span id="tl-text">残 15期</span>
   </div>
-  <div class="topstat" style="min-width:90px;">
-    <span class="lbl">AP / TURN</span>
+  <div class="topstat" style="min-width:80px;">
+    <span class="lbl">AP</span>
     <div id="ts-ap"></div>
   </div>
   <div class="topstat">
-    <span class="lbl">CASH (M¥)</span>
-    <span class="val" id="ts-cash" style="color:var(--gold);">8,000</span>
+    <span class="lbl">CASH</span>
+    <span class="val" id="ts-cash" style="color:var(--gold);font-size:12px;">8,000</span>
   </div>
   <div id="market-ticker"></div>
-  <div style="margin-left:auto;display:flex;gap:8px;">
+  <div style="margin-left:auto;display:flex;gap:6px;">
     <button class="ap-btn" onclick="G.endTurn()">▶ ターン終了</button>
   </div>
 </div>
+
+<!-- サイドバーオーバーレイ（スマホ時） -->
+<div id="sidebar-overlay" onclick="G.closeSidebar()"></div>
 
 <!-- MAIN -->
 <div id="main">
   <!-- SIDEBAR -->
   <div id="sidebar">
-    <div class="sec-hdr">RESOURCES</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="sec-hdr" style="margin-bottom:0;border:none;">RESOURCES</div>
+      <button class="btn btn-sm" style="display:none;" id="sidebar-close-btn" onclick="G.closeSidebar()">✕</button>
+    </div>
     <div id="res-panel"></div>
     <div class="sep"></div>
     <div class="sec-hdr">PORTFOLIO</div>
@@ -392,7 +464,7 @@ h3.section-title{font-size:12px;color:var(--text);margin-bottom:10px;font-weight
 
   <!-- CONTENT -->
   <div id="content">
-    <!-- TABS -->
+    <!-- デスクトップタブ -->
     <div class="tabs" id="main-tabs">
       <div class="tab active" onclick="G.switchTab('map')">🗺 エリアマップ</div>
       <div class="tab" onclick="G.switchTab('project')">📋 案件詳細</div>
@@ -401,6 +473,22 @@ h3.section-title{font-size:12px;color:var(--text);margin-bottom:10px;font-weight
     </div>
     <div id="tab-content"></div>
   </div>
+</div>
+
+<!-- ボトムナビ（スマホ専用） -->
+<div id="bottom-nav">
+  <button class="bnav-item active" id="bnav-map" onclick="G.switchTab('map')">
+    <span class="bnav-icon">🗺</span>マップ
+  </button>
+  <button class="bnav-item" id="bnav-project" onclick="G.switchTab('project')">
+    <span class="bnav-icon">📋</span>案件
+  </button>
+  <button class="bnav-item" id="bnav-market" onclick="G.switchTab('market')">
+    <span class="bnav-icon">📊</span>市況
+  </button>
+  <button class="bnav-item" id="bnav-portfolio" onclick="G.switchTab('portfolio')">
+    <span class="bnav-icon">💼</span>ポートフォリオ
+  </button>
 </div>
 
 <!-- HELP OVERLAY -->
@@ -1459,16 +1547,45 @@ function renderSidebar(){
 function _selectProject(id){
   activeProjectId=id;
   switchTab('project');
+  closeSidebar(); // スマホ時はサイドバーを閉じる
   renderAll();
 }
 
 function switchTab(tab){
   activeTab=tab;
+  // デスクトップタブ
   document.querySelectorAll('.tab').forEach((el,i)=>{
     const tabs=['map','project','market','portfolio'];
     el.classList.toggle('active',tabs[i]===tab);
   });
+  // ボトムナビ同期
+  ['map','project','market','portfolio'].forEach(t=>{
+    const el=document.getElementById('bnav-'+t);
+    if(el) el.classList.toggle('active',t===tab);
+  });
   renderTabContent();
+}
+
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  const cb=document.getElementById('sidebar-close-btn');
+  const isOpen=sb.classList.contains('open');
+  if(isOpen){ closeSidebar(); }
+  else {
+    sb.classList.add('open');
+    ov.classList.add('show');
+    if(cb) cb.style.display='block';
+  }
+}
+
+function closeSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  const cb=document.getElementById('sidebar-close-btn');
+  sb.classList.remove('open');
+  ov.classList.remove('show');
+  if(cb) cb.style.display='none';
 }
 
 function renderTabContent(){
@@ -2731,6 +2848,7 @@ return {
   _selectProject,_finishProject,_restart,
   showNewProjectModalForArea,
   showHelp,_closeHelp,
+  toggleSidebar,closeSidebar,
 };
 })();
 
