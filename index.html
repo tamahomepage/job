@@ -372,6 +372,65 @@ label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px;}
 .help-section-lbl{font-size:9px;font-family:var(--mono);letter-spacing:.1em;
   color:var(--text3);margin-bottom:6px;}
 .help-section-body{font-size:12px;color:var(--text2);line-height:1.8;}
+/* ── TITLE SCREEN ── */
+#title-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .4s;
+  overflow-y:auto;
+}
+#title-overlay.show{opacity:1;pointer-events:all;}
+.title-wrap{
+  max-width:640px;width:92%;margin:auto;padding:32px 16px;
+  display:flex;flex-direction:column;align-items:center;
+}
+.title-logo{
+  font-family:var(--mono);font-size:clamp(32px,8vw,56px);
+  font-weight:900;letter-spacing:.18em;color:var(--accent);
+  text-shadow:0 0 40px rgba(0,200,255,.4);
+  margin-bottom:6px;
+}
+.title-sub{
+  font-size:clamp(11px,3vw,14px);color:var(--text3);
+  font-family:var(--mono);letter-spacing:.12em;margin-bottom:36px;
+  text-align:center;
+}
+.mode-cards{
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;
+  width:100%;margin-bottom:24px;
+}
+@media(max-width:480px){.mode-cards{grid-template-columns:1fr;}}
+.mode-card{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:12px;
+  padding:22px 18px;cursor:pointer;transition:all .2s;text-align:left;
+  position:relative;overflow:hidden;
+}
+.mode-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 60%,rgba(0,200,255,.04));
+  pointer-events:none;
+}
+.mode-card:hover{border-color:var(--accent);transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(0,200,255,.12);}
+.mode-card.gold:hover{border-color:var(--gold);box-shadow:0 8px 32px rgba(232,184,75,.12);}
+.mode-card .mc-icon{font-size:32px;margin-bottom:10px;}
+.mode-card .mc-title{font-size:16px;font-weight:900;color:var(--text);margin-bottom:4px;}
+.mode-card .mc-sub{font-size:11px;color:var(--accent);font-family:var(--mono);
+  letter-spacing:.06em;margin-bottom:10px;}
+.mode-card.gold .mc-sub{color:var(--gold);}
+.mode-card .mc-desc{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:12px;}
+.mode-card .mc-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.mode-card .mc-tag{
+  font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:3px;
+  background:rgba(0,200,255,.08);color:var(--accent);border:1px solid rgba(0,200,255,.2);
+}
+.mode-card.gold .mc-tag{
+  background:rgba(232,184,75,.08);color:var(--gold);border-color:rgba(232,184,75,.2);
+}
+.title-footer{font-size:10px;color:var(--text3);font-family:var(--mono);
+  text-align:center;line-height:1.8;margin-top:8px;}
+
 /* ── TURN LIMIT ── */
 #turn-limit-bar{
   display:flex;align-items:center;gap:6px;padding:4px 10px;
@@ -489,6 +548,108 @@ h3.section-title{font-size:12px;color:var(--text);margin-bottom:10px;font-weight
   <button class="bnav-item" id="bnav-portfolio" onclick="G.switchTab('portfolio')">
     <span class="bnav-icon">💼</span>ポートフォリオ
   </button>
+</div>
+
+<!-- TITLE SCREEN -->
+<div id="title-overlay">
+  <div class="title-wrap">
+
+    <!-- ロゴ -->
+    <div class="title-logo">DEVELOPE</div>
+    <div class="title-sub">— 場所の未来を設計するゲーム —</div>
+
+    <!-- モード選択 -->
+    <div class="mode-cards">
+
+      <!-- 単一開発モード -->
+      <div class="mode-card" onclick="G.startGame('single')">
+        <div class="mc-icon">🏗️</div>
+        <div class="mc-title">単一開発</div>
+        <div class="mc-sub">4年 / 16ターン</div>
+        <div class="mc-desc">
+          1つのエリアで1〜2案件に集中。<br>
+          用地発見から開業まで、<br>
+          デベロッパーの仕事を一通り体験できます。
+        </div>
+        <div class="mc-tags">
+          <span class="mc-tag">初めての方に</span>
+          <span class="mc-tag">30〜45分</span>
+          <span class="mc-tag">最大2案件</span>
+        </div>
+      </div>
+
+      <!-- エリア開発モード -->
+      <div class="mode-card gold" onclick="G.startGame('area')">
+        <div class="mc-icon">🏙️</div>
+        <div class="mc-title">エリア開発</div>
+        <div class="mc-sub">10年 / 40ターン</div>
+        <div class="mc-desc">
+          複数エリアを開発しながら<br>
+          街全体の価値を高めていく。<br>
+          長期的なポートフォリオ経営を体験できます。
+        </div>
+        <div class="mc-tags">
+          <span class="mc-tag">やり込み向け</span>
+          <span class="mc-tag">60〜90分</span>
+          <span class="mc-tag">最大3案件並行</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- モードの違い早見表 -->
+    <div style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:20px;">
+      <div style="font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.12em;margin-bottom:10px;">MODE COMPARISON</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead>
+          <tr>
+            <th style="padding:5px 0;border-bottom:1px solid var(--border);color:var(--text3);font-weight:400;text-align:left;width:40%;"></th>
+            <th style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--accent);font-family:var(--mono);font-weight:700;text-align:center;">単一開発</th>
+            <th style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--gold);font-family:var(--mono);font-weight:700;text-align:center;">エリア開発</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:6px 0;border-bottom:1px solid var(--border);color:var(--text2);">期間</td>
+            <td style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:center;font-family:var(--mono);">4年</td>
+            <td style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:center;font-family:var(--mono);">10年</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;border-bottom:1px solid var(--border);color:var(--text2);">ターン数</td>
+            <td style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:center;font-family:var(--mono);">16</td>
+            <td style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:center;font-family:var(--mono);">40</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;border-bottom:1px solid var(--border);color:var(--text2);">並行案件</td>
+            <td style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:center;font-family:var(--mono);">最大2</td>
+            <td style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:center;font-family:var(--mono);">最大3</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;border-bottom:1px solid var(--border);color:var(--text2);">初期資金</td>
+            <td style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:center;font-family:var(--mono);">8,000M¥</td>
+            <td style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:center;font-family:var(--mono);">12,000M¥</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;border-bottom:1px solid var(--border);color:var(--text2);">エリア解放</td>
+            <td style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:center;font-family:var(--mono);">一部</td>
+            <td style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:center;font-family:var(--mono);">全4エリア</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:var(--text2);">勝利条件</td>
+            <td style="padding:6px 8px;color:var(--text);text-align:center;font-size:10px;">1案件完成</td>
+            <td style="padding:6px 8px;color:var(--text);text-align:center;font-size:10px;">エリア価値向上</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="title-footer">
+      不動産デベロッパーの仕事の本質<br>
+      「場所の制約と可能性を読み、多様な関係者を束ねながら<br>
+      長期的な都市価値と事業価値を両立する面白さ」を体験してください
+    </div>
+
+  </div>
 </div>
 
 <!-- HELP OVERLAY -->
@@ -930,7 +1091,7 @@ const HELP_DATA = {
   },
 };
 
-const MAX_TURNS = 16; // 最大ターン数（4年 = 春夏秋冬×4）
+// MAX_TURNS は S.maxTurns に移行（モード選択で決まる）
 
 const G = (function(){
 let S = null; // State
@@ -938,17 +1099,26 @@ let activeTab = 'map';
 let activeProjectId = null;
 let pendingEvent = null;
 
-function initState(){
+function initState(mode){
+  const modes = {
+    single: { maxTurns:16, maxProjects:1, label:'単一開発モード（4年）',
+              cash:8000, unlockedAreas:['A1','A2'] },
+    area:   { maxTurns:40, maxProjects:3, label:'エリア開発モード（10年）',
+              cash:12000, unlockedAreas:['A1','A2'] },
+  };
+  const cfg = modes[mode] || modes.single;
   S = {
+    gameMode: mode || 'single',
+    maxTurns: cfg.maxTurns,
+    maxProjects: cfg.maxProjects,
     turn:1, season:'2024年春',
     ap:6, maxAp:6,
-    apHistory:[],  // ターンごとのAP消費内訳を記録
-    cash:8000, debt:0,
+    apHistory:[],
+    cash:cfg.cash, debt:0,
     govTrust:50, ownerNetwork:45,
     reputation:55, brand:35, tenantNetwork:40,
     areaValue:{A1:40,A2:30,A3:35,A4:25},
     expertise:{housing:1,commercial:1,office:0,hotel:0,logistics:0},
-    brand:35,
     projects:[],
     completedProjects:[],
     market:{
@@ -960,11 +1130,10 @@ function initState(){
       hotelDemand:1.1,
     },
     log:[],
-    turn:1,
     eventHistory:[],
-    unlockedAreas:['A1','A2'],
+    unlockedAreas:cfg.unlockedAreas.slice(),
   };
-  addLog('ゲーム開始 — デベロッパーとしてのキャリアをスタートします');
+  addLog(`ゲーム開始（${cfg.label}）— デベロッパーとしてのキャリアをスタートします`);
 }
 
 // ── PROJECT FACTORY ──
@@ -1415,7 +1584,7 @@ function showNewProjectModal(){
 }
 
 function _startProject(areaId){
-  if(S.projects.length>=3){notify('並行案件は最大3件までです','warn');_closeModal();return;}
+  if(S.projects.length>=(S.maxProjects||3)){notify(`並行案件は最大${S.maxProjects||3}件までです`,'warn');_closeModal();return;}
   const proj=createProject(areaId);
   proj.finance={...proj.finance,...calcFinance(proj)};
   S.projects.push(proj);
@@ -1749,7 +1918,7 @@ function _onMapClick(areaId){
 }
 
 function showNewProjectModalForArea(areaId){
-  if(S.projects.length>=3){notify('並行案件は最大3件までです','warn');return;}
+  if(S.projects.length>=(S.maxProjects||3)){notify(`並行案件は最大${S.maxProjects||3}件までです`,'warn');return;}
   const area=AREAS.find(a=>a.id===areaId);
   showModal(`<div class="card" style="max-width:480px;margin:auto;">
     <div class="card-hdr"><div class="dot"></div>${area.name} — 案件開始</div>
@@ -2741,11 +2910,9 @@ function getEndingType(score){
 
 function _restart(){
   document.getElementById('ending-overlay').classList.remove('show');
-  initState();
   activeProjectId=null;
   activeTab='map';
-  renderAll();
-  switchTab('map');
+  showTitleScreen();
 }
 
 // ── NOTIFY ──
@@ -2785,7 +2952,7 @@ function _closeHelp(){
 }
 
 // ── TURN LIMIT ──
-function getRemainingTurns(){ return MAX_TURNS - S.turn; }
+function getRemainingTurns(){ return (S.maxTurns||16) - S.turn; }
 
 function checkTurnLimit(){
   const rem = getRemainingTurns();
@@ -2829,14 +2996,24 @@ function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.ra
 
 // ── INIT ──
 function init(){
-  initState();
+  showTitleScreen();
+}
+
+function showTitleScreen(){
+  document.getElementById('title-overlay').classList.add('show');
+}
+
+function startGame(mode){
+  document.getElementById('title-overlay').classList.remove('show');
+  initState(mode);
   renderAll();
   updateSeason();
   renderTopbar();
-  // Welcome event
+  checkTurnLimit();
   setTimeout(()=>{
-    notify('ゲーム開始！エリアマップから最初の案件を選んでください','info');
-  },500);
+    const modeLabel = mode==='area' ? 'エリア開発モード（10年）' : '単一開発モード（4年）';
+    notify(`${modeLabel}でゲーム開始！エリアマップから案件を選んでください`, 'good');
+  }, 400);
 }
 
 return {
@@ -2849,6 +3026,7 @@ return {
   showNewProjectModalForArea,
   showHelp,_closeHelp,
   toggleSidebar,closeSidebar,
+  startGame,showTitleScreen,
 };
 })();
 
