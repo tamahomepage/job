@@ -969,6 +969,15 @@ const ZONE_DEFS = [
   {key:'plaza',     label:'広場・公共', color:'#6366f1', marketRent:0,     vacancyBase:0.00, maintPerTsubo:2000},
 ];
 
+// ── 施工会社定数 ──
+const CONTRACTORS = {
+  C1: {id:'C1', name:'大手ゼネコン A社',      icon:'🏗️', costMult:1.00, qualityBonus:0.00, riskLevel:'低', reputationBonus:0,  desc:'実績豊富。コスト標準・品質高・工期安定。大型案件に強い。'},
+  C2: {id:'C2', name:'中堅ゼネコン B社',      icon:'⚡',  costMult:0.95, qualityBonus:-0.02,riskLevel:'中', reputationBonus:0,  desc:'建設費-5%。工期短縮の可能性あり。品質はやや劣る。'},
+  C3: {id:'C3', name:'地元工務店 C社',        icon:'🤝',  costMult:1.03, qualityBonus:0.02, riskLevel:'低', reputationBonus:8,  desc:'建設費+3%。地域評判+8。地元雇用創出で行政評価も上がりやすい。'},
+  C4: {id:'C4', name:'海外建設 グローバルビルド',icon:'🌍', costMult:0.88, qualityBonus:-0.05,riskLevel:'高', reputationBonus:-5, desc:'建設費-12%と最安値。品質リスク・工期遅延・地域評判低下に注意。'},
+  C5: {id:'C5', name:'プレミアム施工 アークス', icon:'🏆', costMult:1.15, qualityBonus:0.08, riskLevel:'低', reputationBonus:5,  desc:'建設費+15%。品質が大幅UP。完成後の稼働率・賃料水準が上がりやすい。'},
+};
+
 // ── AP設計思想 ──
 // 【基本原則】
 //   フェーズ進行 = AP1消費（意思決定コスト）
@@ -1034,171 +1043,171 @@ const TENANT_POOL = [
   // ── 商業ゾーン向けテナント（zone:'commercial'）──
   {id:'T1', zone:'commercial',name:'ブルーマウンテンコーヒー',type:'カフェ',icon:'☕',units:2,
    brandPower:85,effect:{brand:8,flow:10},tag:'ブランド',
-   desc:'路面店型カフェ。少ない単位で入居でき、人流・ブランド効果が高い。'},
+   desc:'路面店型カフェ。少ない単位で入居でき、人流・ブランド効果が高い。', rentMax:28000},
   {id:'T5', zone:'commercial',name:'セレクトショップ URBN',type:'アパレル',icon:'👗',units:3,
    brandPower:75,effect:{brand:10},tag:'ブランド',
-   desc:'ファッション系テナント。客単価が高く賃料も高め。ブランドイメージを引き上げる。'},
+   desc:'ファッション系テナント。客単価が高く賃料も高め。ブランドイメージを引き上げる。', rentMax:35000},
   {id:'T10',zone:'commercial',name:'有機レストラン OHANA',type:'飲食',icon:'🌿',units:3,
    brandPower:70,effect:{brand:8,stayTime:15},tag:'ブランド',
-   desc:'体験型飲食。滞在時間を延ばし夜の人流を創る。賃料高めだが空室リスクは低い。'},
+   desc:'体験型飲食。滞在時間を延ばし夜の人流を創る。賃料高めだが空室リスクは低い。', rentMax:30000},
   {id:'T2', zone:'commercial',name:'地域スーパー ミナト屋',type:'食品小売',icon:'🛒',units:8,
    brandPower:30,effect:{reputation:10,dailyUse:20},tag:'集客',
-   desc:'日用品スーパー。大きな床が必要だが毎日の集客力が高い。生活利便を高める。'},
+   desc:'日用品スーパー。大きな床が必要だが毎日の集客力が高い。生活利便を高める。', rentMax:14000},
   {id:'T6', zone:'commercial',name:'フィットネス FLEX',type:'スポーツ',icon:'💪',units:6,
    brandPower:55,effect:{nightFlow:30,repeat:25},tag:'集客',
-   desc:'スポーツジム。リピーター需要が高く夜間人流を生む。中程度の床面積が必要。'},
+   desc:'スポーツジム。リピーター需要が高く夜間人流を生む。中程度の床面積が必要。', rentMax:20000},
   // 商業追加テナント
   {id:'TC1',zone:'commercial',name:'ドラッグストア サンライフ',type:'薬局',icon:'💊',units:4,
    brandPower:35,effect:{reputation:8,dailyUse:15},tag:'生活',
-   desc:'処方箋対応ドラッグストア。毎日の来客が安定。医療・福祉ゾーンとの相性が良い。'},
+   desc:'処方箋対応ドラッグストア。毎日の来客が安定。医療・福祉ゾーンとの相性が良い。', rentMax:16000},
   {id:'TC2',zone:'commercial',name:'書店＆文具 ブックタワー',type:'書店',icon:'📚',units:4,
    brandPower:50,effect:{brand:5,stayTime:20},tag:'文化',
-   desc:'大型書店。滞在時間が長くなる。文化的なエリアイメージを高める。'},
+   desc:'大型書店。滞在時間が長くなる。文化的なエリアイメージを高める。', rentMax:20000},
   {id:'TC3',zone:'commercial',name:'シネマコンプレックス',type:'映画館',icon:'🎬',units:15,
    brandPower:70,effect:{nightFlow:40,stayTime:30,brand:8},tag:'集客',
-   desc:'シネコン。大きな床が必要だが夜間を含む安定的な集客力が高い。週末の人流が激増。'},
+   desc:'シネコン。大きな床が必要だが夜間を含む安定的な集客力が高い。週末の人流が激増。', rentMax:22000},
   {id:'TC4',zone:'commercial',name:'コワーキング スペース36',type:'シェアオフィス',icon:'💼',units:3,
    brandPower:55,effect:{brand:6,repeat:20},tag:'産業',
-   desc:'日時利用型コワーキング。起業家・フリーランスが集まり昼間の賑わいを創出。'},
+   desc:'日時利用型コワーキング。起業家・フリーランスが集まり昼間の賑わいを創出。', rentMax:22000},
   {id:'TC5',zone:'commercial',name:'クラフトビール＆バル',type:'飲食',icon:'🍺',units:2,
    brandPower:65,effect:{nightFlow:25,brand:6},tag:'ブランド',
-   desc:'クラフトビール専門店。夜間の集客力が高く、エリアの夜経済を支える。'},
+   desc:'クラフトビール専門店。夜間の集客力が高く、エリアの夜経済を支える。', rentMax:26000},
   {id:'TC6',zone:'commercial',name:'子ども向け体験施設 キッズラボ',type:'子育て',icon:'🧸',units:5,
    brandPower:40,effect:{reputation:12,flow:15},tag:'ファミリー',
-   desc:'遊び場・学び場型施設。ファミリー層を呼び込み週末の人流を大幅に増やす。'},
+   desc:'遊び場・学び場型施設。ファミリー層を呼び込み週末の人流を大幅に増やす。', rentMax:14000},
   {id:'TC7',zone:'commercial',name:'100円ショップ デイズ',type:'生活雑貨',icon:'🛍️',units:3,
    brandPower:15,effect:{reputation:5,dailyUse:18},tag:'生活',
-   desc:'低単価だが来客数が多い生活密着型テナント。空室になりにくく安定稼働。'},
+   desc:'低単価だが来客数が多い生活密着型テナント。空室になりにくく安定稼働。', rentMax:10000},
   {id:'TC8',zone:'commercial',name:'フードホール（屋台村）',type:'飲食',icon:'🍜',units:7,
    brandPower:60,effect:{flow:25,stayTime:25,nightFlow:20},tag:'集客',
-   desc:'複数の飲食店が集まるフードホール。多様な客層を引き込み昼夜の集客が期待できる。'},
+   desc:'複数の飲食店が集まるフードホール。多様な客層を引き込み昼夜の集客が期待できる。', rentMax:20000},
   {id:'TC9',zone:'commercial',name:'インドアスポーツ施設',type:'スポーツ',icon:'🏸',units:10,
    brandPower:45,effect:{nightFlow:35,repeat:30},tag:'集客',
-   desc:'バドミントン・バスケ等の多目的スポーツ施設。大きめの床が必要だが稼働率が高い。'},
+   desc:'バドミントン・バスケ等の多目的スポーツ施設。大きめの床が必要だが稼働率が高い。', rentMax:16000},
   {id:'TC10',zone:'commercial',name:'美容・ネイルサロン複合',type:'美容',icon:'💅',units:2,
    brandPower:55,effect:{brand:5,repeat:22},tag:'リピーター',
-   desc:'美容院・ネイル・エステが入居する複合サロン。リピーター率が高く安定した賃料収入。'},
+   desc:'美容院・ネイル・エステが入居する複合サロン。リピーター率が高く安定した賃料収入。', rentMax:24000},
   // ── オフィスゾーン向けテナント（zone:'office'）──
   {id:'T8', zone:'office',name:'R&D オフィス TechHub',type:'オフィス',icon:'💻',units:4,
    brandPower:65,effect:{brand:6,govTrust:5},tag:'産業',isOffice:true,contractYears:5,telewWorkSensitive:true,
-   desc:'テック系中小企業のオフィス。比較的小さな床で入居可能。テレワーク影響を受けやすい。'},
+   desc:'テック系中小企業のオフィス。比較的小さな床で入居可能。テレワーク影響を受けやすい。', rentMax:22000},
   {id:'T11',zone:'office',name:'大手IT企業 本社移転',type:'オフィス大型',icon:'🏢',units:20,
    brandPower:90,effect:{brand:15,govTrust:5},tag:'アンカー',
    isOffice:true,anchorEffect:true,contractYears:10,telewWorkSensitive:true,
-   desc:'大企業1社が大型フロアを一括借り。アンカー効果発動で他テナント誘致が有利に。景気後退リスクに注意。'},
+   desc:'大企業1社が大型フロアを一括借り。アンカー効果発動で他テナント誘致が有利に。景気後退リスクに注意。', rentMax:40000},
   {id:'T12',zone:'office',name:'外資コンサル 支社オフィス',type:'オフィス中型',icon:'🌐',units:8,
    brandPower:80,effect:{brand:12,govTrust:8},tag:'高賃料',
    isOffice:true,anchorEffect:false,contractYears:5,telewWorkSensitive:false,
-   desc:'外資系は高賃料・短期契約。ブランド効果は高いが更新リスクも高い。テレワーク影響は少ない。'},
+   desc:'外資系は高賃料・短期契約。ブランド効果は高いが更新リスクも高い。テレワーク影響は少ない。', rentMax:45000},
   {id:'T13',zone:'office',name:'スタートアップ集積HUB',type:'シェアオフィス',icon:'🚀',units:5,
    brandPower:60,effect:{brand:8,areaValue:8},tag:'集積',
    isOffice:true,anchorEffect:false,contractYears:1,telewWorkSensitive:true,
-   desc:'複数スタートアップが入居。エリアの革新イメージが向上。入れ替わりが激しい。'},
+   desc:'複数スタートアップが入居。エリアの革新イメージが向上。入れ替わりが激しい。', rentMax:22000},
   {id:'T14',zone:'office',name:'R&D研究所 産学連携型',type:'R&D',icon:'🔬',units:12,
    brandPower:70,effect:{brand:10,govTrust:12},tag:'産業',
    isOffice:true,anchorEffect:false,contractYears:15,telewWorkSensitive:false,
-   desc:'大学・研究機関と連携。長期契約で安定。行政評価が大きく向上する。大きな床が必要。'},
+   desc:'大学・研究機関と連携。長期契約で安定。行政評価が大きく向上する。大きな床が必要。', rentMax:26000},
   // オフィス追加テナント
   {id:'TO1',zone:'office',name:'医療法人 クリニックセンター',type:'医療',icon:'🏥',units:6,
    brandPower:60,effect:{reputation:15,govTrust:8},tag:'生活',
    isOffice:false,contractYears:20,telewWorkSensitive:false,
-   desc:'クリニック・調剤薬局の複合入居。超長期契約で安定。住宅ゾーンとの相乗効果が高い。'},
+   desc:'クリニック・調剤薬局の複合入居。超長期契約で安定。住宅ゾーンとの相乗効果が高い。', rentMax:18000},
   {id:'TO2',zone:'office',name:'法律・会計事務所 複合',type:'士業',icon:'⚖️',units:3,
    brandPower:50,effect:{brand:5,govTrust:6},tag:'専門職',
    isOffice:true,contractYears:10,telewWorkSensitive:false,
-   desc:'弁護士・税理士等の士業事務所。信頼性が高くテレワーク影響を受けにくい安定テナント。'},
+   desc:'弁護士・税理士等の士業事務所。信頼性が高くテレワーク影響を受けにくい安定テナント。', rentMax:26000},
   {id:'TO3',zone:'office',name:'コールセンター 大規模',type:'BPO',icon:'📞',units:10,
    brandPower:20,effect:{govTrust:3},tag:'雇用',
    isOffice:true,contractYears:5,telewWorkSensitive:true,
-   desc:'BPO・コールセンター。賃料は低めだが大量の雇用を生む。行政の雇用創出評価が高い。'},
+   desc:'BPO・コールセンター。賃料は低めだが大量の雇用を生む。行政の雇用創出評価が高い。', rentMax:12000},
   {id:'TO4',zone:'office',name:'IT企業 中堅オフィス',type:'オフィス',icon:'🖥️',units:6,
    brandPower:60,effect:{brand:7},tag:'産業',
    isOffice:true,contractYears:3,telewWorkSensitive:true,
-   desc:'成長期のIT企業。移転が多いが賃料水準は高め。スタートアップが育つとアンカー候補になる。'},
+   desc:'成長期のIT企業。移転が多いが賃料水準は高め。スタートアップが育つとアンカー候補になる。', rentMax:26000},
   {id:'TO5',zone:'office',name:'デザイン・クリエイター集積',type:'クリエイティブ',icon:'🎨',units:4,
    brandPower:72,effect:{brand:12,areaValue:6},tag:'文化',
    isOffice:true,contractYears:2,telewWorkSensitive:true,
-   desc:'デザイン事務所・映像制作会社が集まる。エリアのクリエイティブイメージを高める。'},
+   desc:'デザイン事務所・映像制作会社が集まる。エリアのクリエイティブイメージを高める。', rentMax:24000},
   {id:'TO6',zone:'office',name:'保育所・学童施設',type:'子育て',icon:'🌈',units:3,
    brandPower:35,effect:{reputation:18,govTrust:14},tag:'公共',
    isOffice:false,contractYears:15,telewWorkSensitive:false,
-   desc:'企業主導型保育所。行政評価が大幅UP。就労者の利便性を高め入居企業の満足度が上がる。'},
+   desc:'企業主導型保育所。行政評価が大幅UP。就労者の利便性を高め入居企業の満足度が上がる。', rentMax:10000},
   {id:'TO7',zone:'office',name:'サテライトオフィス 多拠点型',type:'シェアオフィス',icon:'🏘️',units:3,
    brandPower:48,effect:{brand:4,repeat:18},tag:'集積',
    isOffice:true,contractYears:1,telewWorkSensitive:false,
-   desc:'大企業のサテライト拠点向け。テレワーク普及でむしろ需要増。小さな床で複数社が使う。'},
+   desc:'大企業のサテライト拠点向け。テレワーク普及でむしろ需要増。小さな床で複数社が使う。', rentMax:24000},
   // 商業追加（大型施設向け）
   {id:'TC11',zone:'commercial',name:'百貨店型ショッピングモール',type:'商業施設',icon:'🏬',units:30,
    brandPower:80,effect:{brand:18,flow:40,stayTime:30},tag:'大型集客',
-   desc:'大規模商業施設。超高層の低層階を丸ごと占有。集客力は最強だが大きな床が必要。'},
+   desc:'大規模商業施設。超高層の低層階を丸ごと占有。集客力は最強だが大きな床が必要。', rentMax:18000},
   {id:'TC12',zone:'commercial',name:'高級スーパー プレミアムマート',type:'食品小売',icon:'🥩',units:6,
    brandPower:65,effect:{brand:8,reputation:8,dailyUse:18},tag:'ブランド',
-   desc:'高品質・高単価のプレミアムスーパー。富裕層・共働き世帯に人気。エリアのブランドを高める。'},
+   desc:'高品質・高単価のプレミアムスーパー。富裕層・共働き世帯に人気。エリアのブランドを高める。', rentMax:28000},
   {id:'TC13',zone:'commercial',name:'スポーツ用品 メガストア',type:'スポーツ',icon:'⚽',units:8,
    brandPower:55,effect:{flow:20,brand:6},tag:'集客',
-   desc:'大型スポーツ用品店。週末の集客力が高く、フィットネス施設との相乗効果が期待できる。'},
+   desc:'大型スポーツ用品店。週末の集客力が高く、フィットネス施設との相乗効果が期待できる。', rentMax:16000},
   {id:'TC14',zone:'commercial',name:'カルチャースクール複合',type:'文化',icon:'🎭',units:5,
    brandPower:58,effect:{brand:9,stayTime:25,repeat:18},tag:'文化',
-   desc:'料理・英会話・音楽等の習い事スクールが集まる施設。リピーター率が高く平日昼の集客を作る。'},
+   desc:'料理・英会話・音楽等の習い事スクールが集まる施設。リピーター率が高く平日昼の集客を作る。', rentMax:20000},
   {id:'TC15',zone:'commercial',name:'ペットショップ＆動物病院',type:'生活',icon:'🐾',units:4,
    brandPower:42,effect:{reputation:10,repeat:20},tag:'生活',
-   desc:'ペット関連の総合施設。ペットオーナー世帯の固定客化につながる。'},
+   desc:'ペット関連の総合施設。ペットオーナー世帯の固定客化につながる。', rentMax:14000},
   {id:'TC16',zone:'commercial',name:'電気量販店 テックプラザ',type:'家電',icon:'📱',units:10,
    brandPower:50,effect:{flow:18,dailyUse:12},tag:'集客',
-   desc:'家電・スマホ・PCの大型量販店。集客力は高いが賃料単価が低め。週末の人流に貢献する。'},
+   desc:'家電・スマホ・PCの大型量販店。集客力は高いが賃料単価が低め。週末の人流に貢献する。', rentMax:14000},
   {id:'TC17',zone:'commercial',name:'ホームセンター DIY+',type:'生活雑貨',icon:'🔨',units:12,
    brandPower:30,effect:{reputation:8,dailyUse:15},tag:'生活',
-   desc:'DIY・日用品の大型ホームセンター。郊外型エリアに特に有効。大きな床が必要。'},
+   desc:'DIY・日用品の大型ホームセンター。郊外型エリアに特に有効。大きな床が必要。', rentMax:10000},
   {id:'TC18',zone:'commercial',name:'カフェ＆コワーキング BLEND',type:'カフェ',icon:'☕',units:3,
    brandPower:72,effect:{brand:9,stayTime:20,repeat:15},tag:'ブランド',
-   desc:'仕事もできるプレミアムカフェ。長時間滞在客が多く一人あたり消費が高い。'},
+   desc:'仕事もできるプレミアムカフェ。長時間滞在客が多く一人あたり消費が高い。', rentMax:30000},
   {id:'TC19',zone:'commercial',name:'温浴施設 スパリゾート',type:'スポーツ',icon:'♨️',units:14,
    brandPower:68,effect:{brand:12,stayTime:40,nightFlow:30},tag:'体験',
-   desc:'サウナ・浴槽・岩盤浴を備えた温浴施設。滞在時間が最長クラス。夜間集客力も高い。'},
+   desc:'サウナ・浴槽・岩盤浴を備えた温浴施設。滞在時間が最長クラス。夜間集客力も高い。', rentMax:20000},
   {id:'TC20',zone:'commercial',name:'イベントホール・貸しスペース',type:'多目的',icon:'🎪',units:8,
    brandPower:55,effect:{brand:7,flow:22,areaValue:5},tag:'多目的',
-   desc:'展示会・音楽イベント・企業発表会に使える多目的ホール。エリアの話題性を作る。'},
+   desc:'展示会・音楽イベント・企業発表会に使える多目的ホール。エリアの話題性を作る。', rentMax:18000},
   // オフィス追加（超高層向け）
   {id:'TO8', zone:'office',name:'大手製造業 東京本社',type:'オフィス大型',icon:'🏭',units:25,
    brandPower:85,effect:{brand:12,govTrust:8},tag:'アンカー',
    isOffice:true,anchorEffect:true,contractYears:15,telewWorkSensitive:false,
-   desc:'製造業大手の本社機能移転。テレワーク影響が少なく超長期契約。安定した大口賃料が見込める。'},
+   desc:'製造業大手の本社機能移転。テレワーク影響が少なく超長期契約。安定した大口賃料が見込める。', rentMax:35000},
   {id:'TO9', zone:'office',name:'外資金融 日本拠点',type:'オフィス中型',icon:'💹',units:10,
    brandPower:92,effect:{brand:18,govTrust:6},tag:'高賃料',
    isOffice:true,anchorEffect:false,contractYears:5,telewWorkSensitive:false,
-   desc:'外資系金融機関の日本拠点。賃料単価が最高水準。グレードAオフィスと相性が良い。'},
+   desc:'外資系金融機関の日本拠点。賃料単価が最高水準。グレードAオフィスと相性が良い。', rentMax:55000},
   {id:'TO10',zone:'office',name:'総合商社 事業部移転',type:'オフィス大型',icon:'🌏',units:18,
    brandPower:80,effect:{brand:14,govTrust:7},tag:'アンカー',
    isOffice:true,anchorEffect:true,contractYears:10,telewWorkSensitive:false,
-   desc:'大手総合商社の事業部門移転。安定した賃料収入と高いブランド価値をもたらす。'},
+   desc:'大手総合商社の事業部門移転。安定した賃料収入と高いブランド価値をもたらす。', rentMax:38000},
   {id:'TO11',zone:'office',name:'IT大手 研究開発拠点',type:'R&D',icon:'🔭',units:15,
    brandPower:88,effect:{brand:16,govTrust:10,areaValue:10},tag:'産業',
    isOffice:true,anchorEffect:false,contractYears:10,telewWorkSensitive:true,
-   desc:'ITメガ企業の研究開発拠点。エリアのイノベーションイメージを大きく向上させる。'},
+   desc:'ITメガ企業の研究開発拠点。エリアのイノベーションイメージを大きく向上させる。', rentMax:38000},
   {id:'TO12',zone:'office',name:'外資コンサル 大型本部',type:'オフィス大型',icon:'🌐',units:22,
    brandPower:90,effect:{brand:20,govTrust:9},tag:'高賃料',
    isOffice:true,anchorEffect:true,contractYears:8,telewWorkSensitive:false,
-   desc:'外資大手コンサルの日本本部。最高水準の賃料と強力なブランド効果。グレードAビル限定。'},
+   desc:'外資大手コンサルの日本本部。最高水準の賃料と強力なブランド効果。グレードAビル限定。', rentMax:50000},
   {id:'TO13',zone:'office',name:'メディア・放送局 スタジオ',type:'クリエイティブ',icon:'📺',units:12,
    brandPower:75,effect:{brand:14,areaValue:8},tag:'文化',
    isOffice:true,anchorEffect:false,contractYears:15,telewWorkSensitive:false,
-   desc:'テレビ局・ネット配信のスタジオ機能。エリアの知名度を全国区に高める効果がある。'},
+   desc:'テレビ局・ネット配信のスタジオ機能。エリアの知名度を全国区に高める効果がある。', rentMax:28000},
   {id:'TO14',zone:'office',name:'官公庁 出先機関',type:'公共オフィス',icon:'🏛️',units:8,
    brandPower:30,effect:{govTrust:22,reputation:12},tag:'安定',
    isOffice:true,anchorEffect:false,contractYears:20,telewWorkSensitive:false,
-   desc:'中央省庁・自治体の出先機関。賃料は低いが行政信頼が大幅UP。超長期で確実な契約。'},
+   desc:'中央省庁・自治体の出先機関。賃料は低いが行政信頼が大幅UP。超長期で確実な契約。', rentMax:10000},
   {id:'TO15',zone:'office',name:'大学キャンパス サテライト',type:'R&D',icon:'🎓',units:16,
    brandPower:70,effect:{brand:10,govTrust:14,areaValue:12},tag:'産業',
    isOffice:true,anchorEffect:false,contractYears:20,telewWorkSensitive:false,
-   desc:'大学の都心サテライトキャンパス。産学連携の拠点となりエリア価値を継続的に高める。'},
+   desc:'大学の都心サテライトキャンパス。産学連携の拠点となりエリア価値を継続的に高める。', rentMax:16000},
   {id:'TO16',zone:'office',name:'中小企業フロア（分割賃貸）',type:'オフィス',icon:'🏢',units:6,
    brandPower:25,effect:{govTrust:5},tag:'汎用',
    isOffice:true,anchorEffect:false,contractYears:2,telewWorkSensitive:true,
-   desc:'小区画に分割して複数の中小企業に賃貸。一社あたりの入退去リスクが分散される。'},
+   desc:'小区画に分割して複数の中小企業に賃貸。一社あたりの入退去リスクが分散される。', rentMax:16000},
   {id:'TO17',zone:'office',name:'ヘルスケア企業 本社',type:'オフィス中型',icon:'🏥',units:10,
    brandPower:65,effect:{brand:10,govTrust:8,reputation:8},tag:'産業',
    isOffice:true,anchorEffect:false,contractYears:10,telewWorkSensitive:false,
-   desc:'製薬・医療機器メーカーの本社。安定した賃料と行政・地域への好影響を持つ。'},
+   desc:'製薬・医療機器メーカーの本社。安定した賃料と行政・地域への好影響を持つ。', rentMax:26000},
 ];
 
 const RANDOM_EVENTS = [
@@ -1448,6 +1457,7 @@ function createProject(areaId){
     buildingScale:'mid',
     zoneRents:{housing:14000,commercial:22000,office:18000,hotel:28000,plaza:0},
     officePlan:{floorplate:'medium',grade:'standard',telework:false,anchorFirst:false},
+    tenantRents:{},  // テナントごとの合意賃料 {tenantId: rent}
   };
 }
 
@@ -1466,9 +1476,15 @@ function calcFinance(proj){
   const byScale    = sc.floors * sc.floorArea;
   const totalFloor = Math.min(maxByFAR, byScale);
 
-  // 建設費（グレード × 規模係数）
+  // ── ビル品質スコア（グレード + 施工会社qualityBonus）──
+  const gradeQuality      = c.grade==='premium'?0.20:c.grade==='high'?0.10:0.00;
+  const contractorQuality = contractor ? (contractor.qualityBonus||0) : 0.00;
+  const buildingQuality   = gradeQuality + contractorQuality; // -0.05〜+0.28
+  const gradeVacBonus     = buildingQuality * 0.15; // 品質が高いほど空室率が下がる
+
+  // 建設費（グレード × 規模係数 × 施工会社係数）
   const gradeM        = c.grade==='standard'?1:c.grade==='high'?1.2:1.4;
-  const consPerSqm    = 350000 * gradeM * sc.costMult * proj.constructionIdxSnapshot;
+  const consPerSqm    = 350000 * gradeM * sc.costMult * contractorMult * proj.constructionIdxSnapshot;
   const constructionCost = Math.round(totalFloor*consPerSqm/1000000);
   const landCost      = Math.round(proj.area * (area.type.includes('都心')?1500:area.type.includes('準工業')?600:800) / 1000);
 
@@ -1480,25 +1496,51 @@ function calcFinance(proj){
   const hotelFloor   = totalFloor*((c.hotel||0)/total);
   const plazaFloor   = totalFloor*((c.plaza||0)/total);
 
-  // 空室率（賃料設定と市況から動的計算）
+  // 空室率（賃料設定 + 市況 + ビル品質）
   const vacRate = (setRent, marketRent, baseV, demandIdx) => {
     if(!setRent) return 0;
     const r = setRent / marketRent;
-    return Math.max(0, Math.min(0.5, baseV + (r>1.3?0.25:r>1.15?0.12:r<0.85?-0.05:0) + (1-demandIdx)*0.08));
+    const rentPenalty = r>1.3?0.25:r>1.15?0.12:r<0.85?-0.05:0;
+    return Math.max(0, Math.min(0.5, baseV - gradeVacBonus + rentPenalty + (1-demandIdx)*0.08));
   };
   const hVac  = vacRate(zr.housing||14000,   14000, 0.05, S.market.housingDemand);
   const cVac  = vacRate(zr.commercial||22000, 22000, 0.10, S.market.commercialDemand);
   const oVac  = vacRate(zr.office||18000,     18000, 0.12, S.market.officeDemand);
   const htVac = vacRate(zr.hotel||28000,      28000, 0.18, S.market.hotelDemand);
 
-  // 賃料収入（プレイヤー設定賃料 × 稼働率）
+  // テナントごとの合意賃料から収入計算（フェーズ8以降）
+  const tr = proj.tenantRents || {};
   const gradeOffM  = op.grade==='A'?1.25:op.grade==='B'?0.9:1.0;
   const anchorB    = op.anchorFirst ? 1.15 : 1.0;
+
+  // テナント選択済みの場合: 各テナントの合意賃料×面積を合算
+  let tenantAnnualRent = 0;
+  if(proj.selectedTenants && proj.selectedTenants.length > 0){
+    proj.selectedTenants.forEach(tid=>{
+      const t = TENANT_POOL.find(x=>x.id===tid);
+      if(!t) return;
+      const agreedRent = tr[tid] || Math.round((t.rentMax||20000)*0.7); // 未設定はrentMaxの70%をデフォルト
+      const tenantFloor = t.units * UNIT_SIZE;
+      tenantAnnualRent += tenantFloor/3.3 * agreedRent * 12 / 1000000;
+    });
+  }
+  // ホテルオペレーターの賃料
+  const hotelOp2 = proj.selectedHotel ? HOTEL_OPERATORS.find(h=>h.id===proj.selectedHotel) : null;
+  if(hotelOp2){
+    const hotelOpFloor = hotelOp2.units * UNIT_SIZE;
+    tenantAnnualRent += hotelOpFloor/3.3 * hotelOp2.rentPerUnit * 12 / 1000000;
+  }
+
+  // 住宅は従来通りゾーン賃料で計算
   const housingRent = housingFloor/3.3*(zr.housing||14000)*12*(1-hVac)/1000000;
+
+  // テナント未選択時はゾーン賃料で試算（フェーズ3〜7）
   const commRent    = commFloor/3.3*(zr.commercial||22000)*12*(1-cVac)/1000000;
   const offRent     = offFloor/3.3*(zr.office||18000)*gradeOffM*anchorB*12*(1-oVac)/1000000;
   const hotelRent   = hotelFloor/3.3*(zr.hotel||28000)*12*(1-htVac)/1000000;
-  const annualRent  = Math.round(housingRent+commRent+offRent+hotelRent);
+  const zoneEstimate = Math.round(commRent+offRent+hotelRent);
+
+  const annualRent = Math.round(housingRent) + (proj.selectedTenants?.length > 0 || proj.selectedHotel ? Math.round(tenantAnnualRent) : zoneEstimate);
 
   // 維持費（ゾーン別管理費 + 規模別共用部維持費）
   // maintPerTsubo: 円/坪/年、/3.3でm²→坪、/1,000,000で円→M¥
@@ -1964,7 +2006,7 @@ function advancePhase(projId, forced){
       label: proj.name + ' 事業融資',
       amount: loanAmt,
       rate: loanRate,
-      remainingTurns: 20,   // 5年=20ターンで元本返済
+      remainingTurns: 60,   // 15年=60ターンで元本返済
       takenAt: S.turn,
       isProjectLoan: true,  // 緊急借入と区別
     });
@@ -2155,6 +2197,14 @@ function _selectHotel(projId, hotelId){
 }
 
 // 住宅タイプ比率設定
+function _setTenantRent(projId, tenantId, val){
+  const proj = S.projects.find(p=>p.id===projId);
+  if(!proj.tenantRents) proj.tenantRents = {};
+  proj.tenantRents[tenantId] = parseInt(val);
+  proj.finance = {...proj.finance, ...calcFinance(proj)};
+  renderProjectDetail(projId);
+}
+
 function _setHousingType(projId, type, val){
   const proj = S.projects.find(p=>p.id===projId);
   if(!proj.housingType) proj.housingType = {s:40,m:40,l:20};
@@ -2183,6 +2233,15 @@ function toggleTenant(projId,tenantId){
     if(usedNow + need > maxUnits){
       notify(`${zoneLabel}ゾーンの空き単位が不足しています（空き${maxUnits-usedNow}単位 / 必要${need}単位）`, 'warn');
       return;
+    }
+    // 上限賃料チェック
+    const tCheck = TENANT_POOL.find(x=>x.id===tenantId);
+    if(tCheck && tCheck.rentMax){
+      const offered = (proj.tenantRents||{})[tenantId] || Math.round(tCheck.rentMax*0.7);
+      if(offered > tCheck.rentMax){
+        notify(`提示賃料が上限を超えています（¥${offered.toLocaleString()} > 上限¥${tCheck.rentMax.toLocaleString()}）`, 'warn');
+        return;
+      }
     }
     proj.selectedTenants.push(tenantId);
     const t2=TENANT_POOL.find(t=>t.id===tenantId);
@@ -2221,8 +2280,13 @@ function setContractor(projId, cId){
   if(!spendAP(1, '施工会社選定')) return;
   const proj=S.projects.find(p=>p.id===projId);
   proj.constructorId=cId;
-  if(cId==='C3') S.reputation=Math.min(100,S.reputation+8);
-  notify('施工会社を決定しました','good');
+  const ct = CONTRACTORS[cId];
+  if(ct){
+    if(ct.reputationBonus!==0) S.reputation=Math.min(100,Math.max(0,S.reputation+ct.reputationBonus));
+    proj.finance={...proj.finance,...calcFinance(proj)};
+    const costPct=Math.round((ct.costMult-1)*100);
+    notify(`${ct.icon} ${ct.name} を選択 — 建設費${costPct===0?'標準':costPct>0?`+${costPct}%`:`${costPct}%`}${ct.reputationBonus!==0?` / 評判${ct.reputationBonus>0?'+':''}${ct.reputationBonus}`:''}`, 'good');
+  }
   renderProjectDetail(projId);
 }
 
@@ -2693,7 +2757,8 @@ function getPhaseBlockReason(proj){
   }
   if(ph===6){
     const f=proj.finance;
-    if(f.cf<0) return '年間CF赤字 — 収支を見直してください';
+    if(f.noi<0) return 'NOIがマイナス — 賣料設定または用途構成を見直してください';
+    if(f.cf<0) return `年間CF赤字（${f.cf.toLocaleString()}M¥）— IRR目標を確認してください`;
     if(f.irr<3) return `IRR ${f.irr}%（3%以上必要）`;
   }
   if(ph===7){
@@ -3098,10 +3163,20 @@ function renderPhase3(proj, area, f){
       <div class="card">
         <div class="card-hdr"><div class="dot" style="background:var(--gold)"></div>建物グレード</div>
         <div class="grid3">
-          ${[{id:'standard',l:'標準',s:'コスト重視'},{id:'high',l:'高品質',s:'+20%コスト'},{id:'premium',l:'プレミアム',s:'+40%コスト'}].map(g=>`
+          ${[
+            {id:'standard',l:'標準',    s:'コスト重視',    vac:'空室率 標準',   rmax:'賃料上限 標準'},
+            {id:'high',    l:'高品質',  s:'+20%コスト',    vac:'空室率 -1.5%',  rmax:'賃料上限 +10%'},
+            {id:'premium', l:'プレミアム',s:'+40%コスト',  vac:'空室率 -3%',    rmax:'賃料上限 +20%'},
+          ].map(g=>`
             <button class="btn ${c.grade===g.id?'btn-primary':''}" onclick="G._setConcept('${proj.id}','grade','${g.id}')">
-              <div style="font-weight:700;">${g.l}</div><div style="font-size:10px;opacity:.7;">${g.s}</div>
+              <div style="font-weight:700;">${g.l}</div>
+              <div style="font-size:10px;opacity:.7;">${g.s}</div>
+              <div style="font-size:9px;color:var(--green);margin-top:2px;">${g.vac}</div>
+              <div style="font-size:9px;color:var(--gold);">${g.rmax}</div>
             </button>`).join('')}
+        </div>
+        <div style="margin-top:8px;padding:6px 10px;background:var(--bg3);border-radius:5px;font-size:10px;color:var(--text3);">
+          品質が高いほど → 空室率低下・テナント賃料上限UP・施工会社の品質補正と合算
         </div>
         ${officePct>=20?`
         <div class="sep"></div>
@@ -3139,28 +3214,6 @@ function renderPhase3(proj, area, f){
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;">
-      <div class="card">
-        <div class="card-hdr"><div class="dot" style="background:var(--green)"></div>用途構成スライダー
-          <span style="margin-left:auto;font-size:11px;color:${total===100?'var(--green)':'var(--red)'};">合計:${total}%</span>
-        </div>
-        ${[
-          {k:'housing',  l:'🏠 住宅',    col:'#60a5fa'},
-          {k:'commercial',l:'🏪 商業',   col:'#34d399'},
-          {k:'office',   l:'🏢 オフィス',col:'#f59e0b'},
-          {k:'hotel',    l:'🏨 ホテル',  col:'#a78bfa'},
-          {k:'plaza',    l:'🌳 広場・公共',col:'#818cf8'},
-        ].map(s=>`<div style="margin-bottom:10px;">
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">
-            <span style="color:var(--text2);">${s.l}</span>
-            <span style="color:${s.col};font-weight:700;">${c[s.k]||0}%</span>
-          </div>
-          <input type="range" min="0" max="100" step="5" value="${c[s.k]||0}"
-            oninput="G._setConceptSlider('${proj.id}','${s.k}',this.value)" style="accent-color:${s.col}">
-        </div>`).join('')}
-        <div style="display:flex;height:18px;border-radius:3px;overflow:hidden;gap:1px;margin-top:4px;">
-          ${[{k:'housing',col:'#3b82f6'},{k:'commercial',col:'#10b981'},{k:'office',col:'#f59e0b'},{k:'hotel',col:'#8b5cf6'},{k:'plaza',col:'#6366f1'}].map(s=>(c[s.k]||0)>0?`<div style="flex:${c[s.k]||0};background:${s.col};display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;transition:flex .3s;">${(c[s.k]||0)>=12?`${c[s.k]}%`:''}</div>`:'').join('')}
-        </div>
-      </div>
       <div class="card" style="border-color:${area.color}44;">
         <div class="card-hdr"><div class="dot" style="background:${area.color}"></div>${area.name}で考えるべき論点</div>
         ${areaPoints.map((p,i)=>`
@@ -3408,6 +3461,7 @@ function renderPhase6(proj,area,f){
           {l:'NOI',v:`¥${f.noi.toLocaleString()}M`,sub:'賃料収入-維持費',c:f.noi>0?'var(--green)':'var(--red)'},
           {l:'年間CF',v:`¥${f.cf.toLocaleString()}M`,sub:'NOI-金融費用',c:f.cf<0?'var(--red)':'var(--green)'},
           {l:'IRR',v:`${f.irr}%`,sub:'目標5%以上',c:f.irr>=5?'var(--green)':f.irr>=3?'var(--amber)':'var(--red)'},
+          {l:'ビル品質',v:`+${f.buildingQuality||0}%`,sub:'空室率低下・賃料上限UP',c:(f.buildingQuality||0)>=15?'var(--green)':(f.buildingQuality||0)>=5?'var(--gold)':'var(--text3)'},
         ].map(m=>`<div style="padding:10px 12px;background:var(--bg3);border-radius:6px;">
           <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">${m.l}</div>
           <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:${m.c||'var(--text)'};">${m.v}</div>
@@ -3442,11 +3496,7 @@ function renderPhase6(proj,area,f){
 }
 
 function renderPhase7(proj,area,f){
-  const contractors=[
-    {id:'C1',name:'大手ゼネコン A社',icon:'🏗️',cost:'標準',quality:'高',speed:'普通',risk:'低'},
-    {id:'C2',name:'中堅ゼネコン B社',icon:'⚡',cost:'安価-5%',quality:'標準',speed:'速い',risk:'中'},
-    {id:'C3',name:'地元工務店 C社',icon:'🤝',cost:'やや高+3%',quality:'高',speed:'普通',risk:'低',bonus:'地域評判+8'},
-  ];
+  const contractors = Object.values(CONTRACTORS);
   const schedule=[
     {ph:'設計完了',status:'完了',icon:'📐'},
     {ph:'建築確認申請',status:'完了',icon:'📋'},
@@ -3459,19 +3509,34 @@ function renderPhase7(proj,area,f){
   return `<div class="grid2">
     <div class="card">
       <div class="card-hdr"><div class="dot"></div>施工会社の選定</div>
-      ${contractors.map(c=>`<div style="padding:12px 14px;border:1px solid ${proj.constructorId===c.id?'var(--accent)':'var(--border)'};border-radius:6px;margin-bottom:8px;cursor:pointer;background:${proj.constructorId===c.id?'rgba(0,200,255,.05)':'var(--bg2)'};" onclick="G.setContractor('${proj.id}','${c.id}')">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-          <span style="font-size:22px;">${c.icon}</span>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text);">${c.name}</div>
-            ${c.bonus?`<span class="badge badge-green" style="font-size:10px;">${c.bonus}</span>`:''}
+      ${contractors.map(ct=>{
+        const isSel = proj.constructorId===ct.id;
+        const costPct = Math.round((ct.costMult-1)*100);
+        const costLabel = costPct===0?'標準':(costPct>0?`+${costPct}%`:`${costPct}%`);
+        const costCol = costPct<0?'var(--green)':costPct>5?'var(--amber)':'var(--text2)';
+        const previewCost = f.constructionCost
+          ? Math.round(f.constructionCost * ct.costMult / (f.contractorMult||1))
+          : 0;
+        return `<div style="padding:12px 14px;border:1px solid ${isSel?'var(--accent)':'var(--border)'};border-radius:6px;margin-bottom:8px;cursor:pointer;background:${isSel?'rgba(0,200,255,.05)':'var(--bg2)'};" onclick="G.setContractor('${proj.id}','${ct.id}')">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:22px;">${ct.icon}</span>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:700;color:var(--text);">${ct.name}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px;">${ct.desc}</div>
+            </div>
+            ${isSel?'<span style="color:var(--accent);font-size:18px;">✓</span>':''}
           </div>
-          ${proj.constructorId===c.id?'<span style="margin-left:auto;color:var(--accent);">✓ 選択中</span>':''}
-        </div>
-        <div class="grid3" style="gap:6px;">
-          ${[{l:'コスト',v:c.cost},{l:'品質',v:c.quality},{l:'速度',v:c.speed},{l:'リスク',v:c.risk}].map(i=>`<div style="text-align:center;padding:4px;background:var(--bg3);border-radius:4px;"><div style="font-size:9px;color:var(--text3);">${i.l}</div><div style="font-size:11px;color:var(--text2);font-weight:700;">${i.v}</div></div>`).join('')}
-        </div>
-      </div>`).join('')}
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:6px;">
+            ${[
+              {l:'建設費',v:costLabel,c:costCol},
+              {l:'品質',v:ct.qualityBonus>0?`+${Math.round(ct.qualityBonus*100)}%`:ct.qualityBonus<0?`${Math.round(ct.qualityBonus*100)}%`:'標準',c:ct.qualityBonus>0?'var(--green)':ct.qualityBonus<0?'var(--red)':'var(--text2)'},
+              {l:'リスク',v:ct.riskLevel,c:ct.riskLevel==='低'?'var(--green)':ct.riskLevel==='高'?'var(--red)':'var(--amber)'},
+              {l:'評判',v:ct.reputationBonus>=0?`+${ct.reputationBonus}`:String(ct.reputationBonus),c:ct.reputationBonus>0?'var(--green)':ct.reputationBonus<0?'var(--red)':'var(--text3)'},
+            ].map(i=>`<div style="text-align:center;padding:4px;background:var(--bg3);border-radius:4px;"><div style="font-size:9px;color:var(--text3);margin-bottom:1px;">${i.l}</div><div style="font-size:11px;color:${i.c};font-weight:700;">${i.v}</div></div>`).join('')}
+          </div>
+          ${previewCost>0?`<div style="font-size:11px;color:var(--text3);">建設費試算: <span style="color:${costCol};font-weight:700;font-family:var(--mono);">¥${previewCost.toLocaleString()}M</span></div>`:''}
+        </div>`;
+      }).join('')}
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div class="card">
@@ -3537,14 +3602,24 @@ function renderPhase8(proj,area,f){
     const canFit  = isSel || rem>=(t.units||1);
     const noZone  = (cap[zone]||0)===0;
     const isDisabled = !isSel && (!canFit || noZone);
-    const curRent = (proj.zoneRents||{})[zone]||{commercial:22000,office:18000}[zone]||18000;
-    const annualM = Math.round(t.units*UNIT_SIZE/3.3*curRent*12/1000000);
-    const dots = Array.from({length:Math.min(t.units,16)},(_,i)=>
+    // 賃料交渉（上限以下なら入居OK、上限超えると来ない）
+    const rMax = t.rentMax || 30000;
+    const rDefault = Math.round(rMax * 0.7); // デフォルトは上限の70%
+    const agreedRent = (proj.tenantRents||{})[t.id] !== undefined ? (proj.tenantRents||{})[t.id] : rDefault;
+    const annualM = Math.round(t.units*UNIT_SIZE/3.3*agreedRent*12/1000000);
+    const overMax = agreedRent > rMax;
+    const rentPct = agreedRent / rMax; // 上限に対する比率
+    const attract = overMax
+      ? {label:'🔴 上限超過 — 入居不可', col:'var(--red)'}
+      : rentPct >= 0.9 ? {label:'🟠 上限ギリギリ — 交渉難航', col:'var(--amber)'}
+      : rentPct >= 0.7 ? {label:'🟡 標準的な提示', col:'var(--gold)'}
+      : {label:'✅ 入居しやすい条件', col:'var(--green)'};
+    const dots = Array.from({length:Math.min(t.units,16)},()=>
       `<div style="width:9px;height:9px;border-radius:1px;background:${isSel?color:color+'44'};border:1px solid ${isSel?color:color+'88'};"></div>`
     ).join('') + (t.units>16?`<span style="font-size:9px;color:var(--text3);"> ×${t.units}</span>`:'');
-    return `<div class="tenant-card ${isSel?'selected':''}" onclick="${isDisabled?'':` G.toggleTenant('${proj.id}','${t.id}')`}"
-      style="${isDisabled?'opacity:.38;cursor:not-allowed;':'cursor:pointer;'}">
-      <div style="display:flex;align-items:flex-start;gap:10px;">
+    return `<div class="tenant-card ${isSel?'selected':''}" style="${isDisabled?'opacity:.38;':''}margin-bottom:2px;">
+      <div onclick="${isDisabled?'':` G.toggleTenant('${proj.id}','${t.id}')`}"
+        style="display:flex;align-items:flex-start;gap:10px;cursor:${isDisabled?'not-allowed':'pointer'};">
         <span style="font-size:22px;flex-shrink:0;">${t.icon}</span>
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:3px;">
@@ -3554,15 +3629,28 @@ function renderPhase8(proj,area,f){
             ${t.contractYears?`<span class="badge badge-blue" style="font-size:9px;">${t.contractYears}年</span>`:''}
             ${noZone?'<span class="badge badge-gray" style="font-size:9px;">比率不足</span>':!canFit&&!isSel?'<span class="badge badge-amber" style="font-size:9px;">単位不足</span>':''}
           </div>
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+          <div style="display:flex;align-items:center;gap:6px;">
             <div style="display:flex;gap:2px;flex-wrap:wrap;">${dots}</div>
-            <span style="font-size:10px;color:var(--text3);white-space:nowrap;">${t.units}単位（${t.units*100}m²）</span>
-            <span style="font-size:10px;color:var(--gold);margin-left:auto;white-space:nowrap;">年≈${annualM}M¥</span>
+            <span style="font-size:10px;color:var(--text3);">${t.units}単位</span>
+            <span style="font-size:10px;color:var(--gold);margin-left:auto;">年≈${annualM}M¥</span>
           </div>
-          ${t.desc?`<div style="font-size:10px;color:var(--text3);line-height:1.5;">${t.desc}</div>`:''}
         </div>
         ${isSel?'<span style="color:var(--green);font-size:18px;flex-shrink:0;">✓</span>':''}
       </div>
+      ${!noZone?`
+      <div style="margin-top:7px;padding:7px 9px;background:var(--bg3);border-radius:5px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+          <span style="font-size:9px;color:var(--text3);">提示賃料（上限 ¥${rMax.toLocaleString()}/坪）</span>
+          <span style="font-size:12px;font-family:var(--mono);font-weight:700;color:${overMax?'var(--red)':color};">¥${agreedRent.toLocaleString()}<span style="font-size:9px;color:var(--text3);">/坪</span></span>
+        </div>
+        <input type="range" min="2000" max="${Math.round(rMax*1.3)}" step="1000" value="${agreedRent}"
+          oninput="G._setTenantRent('${proj.id}','${t.id}',this.value)"
+          style="width:100%;accent-color:${overMax?'#ff4466':color};">
+        <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:2px;">
+          <span style="color:${attract.col};">${attract.label}</span>
+          <span style="color:var(--text3);">上限: ¥${rMax.toLocaleString()}</span>
+        </div>
+      </div>` : ''}
     </div>`;
   };
 
@@ -4053,9 +4141,19 @@ function _finishProject(projId){
   activeProjectId=S.projects.length>0?S.projects[0].id:null;
 
   // Check ending
-  renderAll();
-  switchTab('map');
-  notify(`🏆 ${proj.name} 完成！完成案件${S.completedProjects.length}件`, 'good');
+  const completed = S.completedProjects.length;
+  const isSingleMode = S.gameMode === 'single';
+  if(isSingleMode && completed >= 1){
+    notify(`🏆 ${proj.name} 完成！最終評価に進みます`, 'good');
+    setTimeout(()=>showEnding(), 1200);
+  } else if(!isSingleMode && completed >= 3){
+    notify(`🏆 ${proj.name} 完成！3案件達成 — 最終評価に進みます`, 'good');
+    setTimeout(()=>showEnding(), 1200);
+  } else {
+    renderAll();
+    switchTab('map');
+    notify(`🏆 ${proj.name} 完成！完成案件${completed}件`, 'good');
+  }
 }
 
 // ── ENDING ──
@@ -4105,7 +4203,8 @@ function showEnding(){
 
 function calcFinalScore(){
   let s=0;
-  s+=Math.min(30,S.completedProjects.length*15);
+  const maxComp = S.gameMode==='single' ? 1 : 3;
+  s+=Math.min(30, Math.round(S.completedProjects.length/maxComp*30));
   const avgIrr=S.completedProjects.reduce((a,p)=>a+(calcFinance(p).irr||0),0)/(S.completedProjects.length||1);
   s+=avgIrr>=5?20:avgIrr>=3?12:5;
   s+=S.govTrust>=70?15:S.govTrust>=50?10:5;
@@ -4350,7 +4449,7 @@ return {
   showNewProjectModal,_startProject,_closeModal,_onMapClick,
   negotiateOwner,consultGov,applyVolumeBonus,togglePublicContrib,
   toggleTenant,applySoftMeasure,setContractor,
-  _setConcept,_setConceptSlider,_applyTheme,_selectLo,_setOfficePlan,_setBuildingScale,_setZoneRent,_selectHotel,_setHousingType,
+  _setConcept,_setConceptSlider,_applyTheme,_selectLo,_setOfficePlan,_setBuildingScale,_setZoneRent,_selectHotel,_setHousingType,_setTenantRent,
   _selectProject,_finishProject,_restart,
   showNewProjectModalForArea,
   showHelp,_closeHelp,
