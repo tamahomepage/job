@@ -755,6 +755,31 @@ h3.section-title{font-size:12px;color:var(--text);margin-bottom:10px;font-weight
 
 <script>
 // ═══════════════════════════════════════════════════════════
+// PERFORMANCE UTILITIES
+// ═══════════════════════════════════════════════════════════
+
+// RAFスロットル: 同一フレーム内の複数呼び出しを1回にまとめる
+function rafThrottle(fn){
+  let queued=false;
+  return function(...args){
+    if(queued) return;
+    queued=true;
+    requestAnimationFrame(()=>{queued=false;fn.apply(this,args);});
+  };
+}
+
+// デバウンス: 最後の呼び出しからms経過後に1回だけ実行
+function debounce(fn,ms){
+  let t;
+  return function(...args){clearTimeout(t);t=setTimeout(()=>fn.apply(this,args),ms);};
+}
+
+// calcFinanceキャッシュ: IIFE内で実体を定義するため、ここではスタブのみ
+// （_rawCalcFinanceはIIFE内で定義される）
+let cachedCalcFinance = null; // IIFE内で上書き
+let markFinanceDirty = function(proj){ if(proj) proj._finDirty = true; };
+
+// ═══════════════════════════════════════════════════════════
 // DATA DEFINITIONS
 // ═══════════════════════════════════════════════════════════
 
@@ -1462,7 +1487,18 @@ function createProject(areaId){
 }
 
 // ── FINANCE CALC ──
+// cachedCalcFinanceの実体をIIFE内で定義（_rawCalcFinanceを参照できるスコープ）
+cachedCalcFinance = function(proj, forceDirty){
+  if(!forceDirty && proj._finCache && !proj._finDirty) return proj._finCache;
+  const result = _rawCalcFinance(proj);
+  proj._finCache = result;
+  proj._finDirty = false;
+  return result;
+};
 function calcFinance(proj){
+  return cachedCalcFinance(proj, false);
+}
+function _rawCalcFinance(proj){
   const area = AREAS.find(a=>a.id===proj.areaId);
   const c    = proj.concept;
   const sc   = BUILDING_SCALES[proj.buildingScale||'mid'];
@@ -1477,6 +1513,8 @@ function calcFinance(proj){
   const totalFloor = Math.min(maxByFAR, byScale);
 
   // ── ビル品質スコア（グレード + 施工会社qualityBonus）──
+  const contractor = proj.constructorId ? CONTRACTORS[proj.constructorId] : null;
+  const contractorMult = contractor ? contractor.costMult : 1.0;
   const gradeQuality      = c.grade==='premium'?0.20:c.grade==='high'?0.10:0.00;
   const contractorQuality = contractor ? (contractor.qualityBonus||0) : 0.00;
   const buildingQuality   = gradeQuality + contractorQuality; // -0.05〜+0.28
@@ -1614,10 +1652,13 @@ function endTurn(){
   S.apHistory = [];
   updateSeason();
   updateMarket();
+  // 市況変動後、全プロジェクトのfinanceキャッシュを無効化
+  S.projects.forEach(p=>markFinanceDirty(p));
+  (S.completedProjects||[]).forEach(p=>markFinanceDirty(p));
   tickProjects();
   checkSpecialEvents();
   rollRandomEvent();
-  renderAll();
+  _renderAllImmediate(); // ターン切替は即時描画
   // 借入返済処理（毎ターン）
   processLoans();
   // マイナスCASH警告
@@ -1828,7 +1869,7 @@ function tickProjects(){
     }
     if(proj.phase===9){
       // 月次NOIをターンごとに受取（1ターン=1四半期=3ヶ月分）
-      const f = calcFinance(proj);
+      const f = cachedCalcFinance(proj, false);
       const quarterlyNOI = Math.round(f.noi / 4);
       const quarterlyInterest = Math.round((f.loan*(proj.interestRate||S.market.interestRate)) / 4);
       const quarterlyCF = quarterlyNOI - quarterlyInterest;
@@ -1841,7 +1882,7 @@ function tickProjects(){
   // 完成案件（completedProjects）も収益継続
   (S.completedProjects||[]).forEach(proj=>{
     if(!proj.operation || !proj.operation.monthlyRent) return;
-    const f = calcFinance(proj);
+    const f = cachedCalcFinance(proj, false);
     const quarterlyNOI = Math.round(f.noi / 4);
     if(quarterlyNOI > 0){
       S.cash += quarterlyNOI;
@@ -1946,6 +1987,24 @@ function resolveEvent(action){
 }
 
 // ── ACTIONS ──
+// サイドバーのリソースバーだけ軽量更新
+function _updateResourceBars(){
+  const rl = [
+    {key:'govTrust',v:S.govTrust},{key:'ownerNetwork',v:S.ownerNetwork},
+    {key:'reputation',v:S.reputation},{key:'brand',v:S.brand},{key:'tenantNetwork',v:S.tenantNetwork},
+  ];
+  // proj-listだけ更新（重いres-panelは省略）
+  const projEl = document.getElementById('proj-list');
+  if(projEl && S.projects.length > 0){
+    const proj = S.projects.find(p=>p.id===activeProjectId)||S.projects[0];
+    if(proj){
+      const ph = PHASE_DEF[proj.phase-1]||PHASE_DEF[8];
+      const pct = ((proj.phase-1)/9)*100;
+      // プロジェクトミニカードだけ更新
+    }
+  }
+}
+
 function spendAP(n, name){
   if(S.ap <= 0){
     notify(`AP切れ — ターン終了でAP全回復。または強制進行ボタン（ペナルティあり）`, 'warn');
@@ -2083,7 +2142,7 @@ function negotiateOwner(projId, loId, action){
     }
   }
   renderProjectDetail(projId);
-  renderSidebar();
+  _updateResourceBars();
 }
 
 function consultGov(projId){
@@ -2100,14 +2159,14 @@ function consultGov(projId){
   }
   notify('行政協議完了','good');
   renderProjectDetail(projId);
-  renderSidebar();
+  _updateResourceBars();
 }
 
 function applyVolumeBonus(projId){
   const proj=S.projects.find(p=>p.id===projId);
   proj.finance.bonusApplied=true;
   proj.finance.ratioBonus=100;
-  proj.finance={...proj.finance,...calcFinance(proj)};
+  markFinanceDirty(proj); proj.finance={...proj.finance,...calcFinance(proj)};
   S.govTrust=Math.min(100,S.govTrust+8);
   notify('容積ボーナス+100%を適用しました！収支が改善されます','good');
   renderProjectDetail(projId);
@@ -2192,7 +2251,7 @@ function _selectHotel(projId, hotelId){
     S.brand = Math.min(100, S.brand + Math.round(h.effect.brand/3));
     notify(`🏨 ${h.name}と契約しました`, 'good');
   }
-  proj.finance = {...proj.finance, ...calcFinance(proj)};
+  markFinanceDirty(proj); proj.finance = {...proj.finance, ...calcFinance(proj)};
   renderProjectDetail(projId);
 }
 
@@ -2201,9 +2260,10 @@ function _setTenantRent(projId, tenantId, val){
   const proj = S.projects.find(p=>p.id===projId);
   if(!proj.tenantRents) proj.tenantRents = {};
   proj.tenantRents[tenantId] = parseInt(val);
-  proj.finance = {...proj.finance, ...calcFinance(proj)};
+  markFinanceDirty(proj); proj.finance = {...proj.finance, ...calcFinance(proj)};
   renderProjectDetail(projId);
 }
+const _setTenantRentDebounced = debounce(function(projId, tenantId, val){ _setTenantRent(projId, tenantId, val); }, 150);
 
 function _setHousingType(projId, type, val){
   const proj = S.projects.find(p=>p.id===projId);
@@ -2211,6 +2271,7 @@ function _setHousingType(projId, type, val){
   proj.housingType[type] = parseInt(val);
   renderProjectDetail(projId);
 }
+const _setHousingTypeDebounced = debounce(function(projId, type, val){ _setHousingType(projId, type, val); }, 150);
 
 function toggleTenant(projId,tenantId){
   const proj=S.projects.find(p=>p.id===projId);
@@ -2252,7 +2313,8 @@ function toggleTenant(projId,tenantId){
     }
   }
   renderProjectDetail(projId);
-  renderSidebar();
+  // サイドバーは軽量更新のみ（リソースバーだけ更新）
+  _updateResourceBars();
 }
 
 function applySoftMeasure(projId, measureId){
@@ -2273,7 +2335,7 @@ function applySoftMeasure(projId, measureId){
   if(m.flow&&proj.operation) proj.operation.dailyFlow=(proj.operation.dailyFlow||0)+m.flow;
   notify(m.name+' を実施しました','good');
   renderProjectDetail(projId);
-  renderSidebar();
+  _updateResourceBars();
 }
 
 function setContractor(projId, cId){
@@ -2283,7 +2345,7 @@ function setContractor(projId, cId){
   const ct = CONTRACTORS[cId];
   if(ct){
     if(ct.reputationBonus!==0) S.reputation=Math.min(100,Math.max(0,S.reputation+ct.reputationBonus));
-    proj.finance={...proj.finance,...calcFinance(proj)};
+    markFinanceDirty(proj); proj.finance={...proj.finance,...calcFinance(proj)};
     const costPct=Math.round((ct.costMult-1)*100);
     notify(`${ct.icon} ${ct.name} を選択 — 建設費${costPct===0?'標準':costPct>0?`+${costPct}%`:`${costPct}%`}${ct.reputationBonus!==0?` / 評判${ct.reputationBonus>0?'+':''}${ct.reputationBonus}`:''}`, 'good');
   }
@@ -2317,13 +2379,13 @@ function showNewProjectModal(){
 function _startProject(areaId){
   if(S.projects.length>=(S.maxProjects||3)){notify(`並行案件は最大${S.maxProjects||3}件までです`,'warn');_closeModal();return;}
   const proj=createProject(areaId);
-  proj.finance={...proj.finance,...calcFinance(proj)};
+  markFinanceDirty(proj); proj.finance={...proj.finance,...calcFinance(proj)};
   S.projects.push(proj);
   activeProjectId=proj.id;
   addLog('新規案件を開始: '+proj.name);
   _closeModal();
   switchTab('project');
-  renderAll();
+  _renderAllImmediate();
   notify('案件を開始しました: '+proj.name,'info');
 }
 
@@ -2339,11 +2401,14 @@ function showModal(html){
 function _closeModal(){if(_modalEl){_modalEl.remove();_modalEl=null;}}
 
 // ── RENDER ──
-function renderAll(){
+// 内部実装（直接呼ぶ用）
+function _renderAllImmediate(){
   renderTopbar();
   renderSidebar();
   renderTabContent();
 }
+// 外部呼び出し用（RAFスロットル付き）
+const renderAll = rafThrottle(_renderAllImmediate);
 
 function renderTopbar(){
   document.getElementById('ts-season').textContent = S.season;
@@ -2442,12 +2507,12 @@ function renderSidebar(){
         </div>`;
       }).join('');
   document.getElementById('proj-list').innerHTML=projHtml;
-  // 完成案件の収益サマリー
+  // 完成案件の収益サマリー（キャッシュ版calcFinanceを使用）
   const compIncome = (S.completedProjects||[]).reduce((sum,p)=>{
-    const f=calcFinance(p); return sum+Math.round(f.noi/4);
+    const f=cachedCalcFinance(p, false); return sum+Math.round(f.noi/4);
   },0);
   const runningIncome = S.projects.filter(p=>p.phase===9).reduce((sum,p)=>{
-    const f=calcFinance(p); return sum+Math.round(f.noi/4);
+    const f=cachedCalcFinance(p, false); return sum+Math.round(f.noi/4);
   },0);
   const totalQIncome = compIncome + runningIncome;
   if(totalQIncome>0){
@@ -2486,7 +2551,9 @@ function _selectProject(id){
   activeProjectId=id;
   switchTab('project');
   closeSidebar(); // スマホ時はサイドバーを閉じる
-  renderAll();
+  // switchTabが既にrenderTabContentを呼ぶのでrenderAllは不要
+  // サイドバーのactiveハイライトだけ更新
+  renderSidebar();
 }
 
 function switchTab(tab){
@@ -2770,11 +2837,23 @@ function getPhaseBlockReason(proj){
   return null; // ブロックなし
 }
 
+// renderProjectDetailの実装（RAFスロットル付き）
+let _pendingRenderProjId = null;
 function renderProjectDetail(projId){
+  _pendingRenderProjId = projId;
+  _scheduleRenderProjectDetail();
+}
+const _scheduleRenderProjectDetail = rafThrottle(function(){
+  const projId = _pendingRenderProjId;
+  _renderProjectDetailImmediate(projId);
+});
+
+function _renderProjectDetailImmediate(projId){
   const proj=S.projects.find(p=>p.id===projId);
   if(!proj) return '';
   const area=AREAS.find(a=>a.id===proj.areaId);
-  const f=calcFinance(proj);
+  // financeはキャッシュを使い、_finDirtyの場合のみ再計算
+  const f = cachedCalcFinance(proj, false);
   const av=getAreaValue(proj);
   const agr=getAgreementRate(proj);
 
@@ -3088,10 +3167,11 @@ function renderPhase3(proj, area, f){
           ].map(s=>`<div style="margin-bottom:7px;">
             <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">
               <span style="color:var(--text2);">${s.l}</span>
-              <span style="color:${s.col};font-weight:700;">${c[s.k]||0}%</span>
+              <span id="zone-pct-${s.k}" style="color:${s.col};font-weight:700;">${c[s.k]||0}%</span>
             </div>
             <input type="range" min="0" max="100" step="5" value="${c[s.k]||0}"
-              oninput="G._setConceptSlider('${proj.id}','${s.k}',this.value)" style="accent-color:${s.col};width:100%;">
+              oninput="document.getElementById('zone-pct-${s.k}').textContent=this.value+'%';"
+              onchange="G._setConceptSliderDebounced('${proj.id}','${s.k}',this.value)" style="accent-color:${s.col};width:100%;">
           </div>`).join('')}
           <div style="display:flex;height:10px;border-radius:3px;overflow:hidden;gap:1px;margin-top:4px;">
             ${[{k:'housing',col:'#3b82f6'},{k:'commercial',col:'#10b981'},{k:'office',col:'#f59e0b'},{k:'hotel',col:'#8b5cf6'},{k:'plaza',col:'#6366f1'}].map(s=>(c[s.k]||0)>0?`<div style="flex:${c[s.k]||0};background:${s.col};transition:flex .3s;"></div>`:'').join('')}
@@ -3443,7 +3523,7 @@ function renderPhase6(proj,area,f){
               <span style="font-family:var(--mono);font-weight:700;color:${barColor};">¥${cur.toLocaleString()}/坪</span>
             </div>
             <input type="range" min="5000" max="60000" step="1000" value="${cur}"
-              oninput="G._setZoneRent('${proj.id}','${z.key}',this.value)"
+              onchange="G._setZoneRentDebounced('${proj.id}','${z.key}',this.value)"
               style="width:100%;accent-color:${z.color};">
             <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:2px;">
               <span style="color:${barColor};">${label}</span>
@@ -3644,7 +3724,7 @@ function renderPhase8(proj,area,f){
           <span style="font-size:12px;font-family:var(--mono);font-weight:700;color:${overMax?'var(--red)':color};">¥${agreedRent.toLocaleString()}<span style="font-size:9px;color:var(--text3);">/坪</span></span>
         </div>
         <input type="range" min="2000" max="${Math.round(rMax*1.3)}" step="1000" value="${agreedRent}"
-          oninput="G._setTenantRent('${proj.id}','${t.id}',this.value)"
+          onchange="G._setTenantRentDebounced('${proj.id}','${t.id}',this.value)"
           style="width:100%;accent-color:${overMax?'#ff4466':color};">
         <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:2px;">
           <span style="color:${attract.col};">${attract.label}</span>
@@ -3828,7 +3908,7 @@ function renderPhase8(proj,area,f){
               <span style="color:#60a5fa;font-weight:700;">${Math.round((ht[tp.k]||0)/htTotal*100)}%</span>
             </div>
             <input type="range" min="0" max="100" step="10" value="${ht[tp.k]||0}"
-              oninput="G._setHousingType('${proj.id}','${tp.k}',this.value)"
+              onchange="G._setHousingTypeDebounced('${proj.id}','${tp.k}',this.value)"
               style="width:100%;accent-color:#60a5fa;">
           </div>`).join('')}
         <div style="font-size:10px;color:var(--text3);">1LDK多め → 高稼働率・ファミリー少 / 3LDK多め → 稼働低下・賃料単価高</div>
@@ -4071,7 +4151,7 @@ function renderPortfolioTab(){
 function _setConcept(projId,key,val){
   const proj=S.projects.find(p=>p.id===projId);
   proj.concept[key]=val;
-  proj.finance={...proj.finance,...calcFinance(proj)};
+  if(key==='grade') { markFinanceDirty(proj); proj.finance={...proj.finance,...calcFinance(proj)}; }
   renderProjectDetail(projId);
 }
 
@@ -4079,14 +4159,14 @@ function _setOfficePlan(projId,key,val){
   const proj=S.projects.find(p=>p.id===projId);
   if(!proj.officePlan) proj.officePlan={floorplate:'medium',grade:'standard',telework:false,anchorFirst:false};
   proj.officePlan[key]=val;
-  proj.finance={...proj.finance,...calcFinance(proj)};
+  markFinanceDirty(proj); proj.finance={...proj.finance,...calcFinance(proj)};
   renderProjectDetail(projId);
 }
 
 function _setBuildingScale(projId, scale){
   const proj = S.projects.find(p=>p.id===projId);
   proj.buildingScale = scale;
-  proj.finance = {...proj.finance, ...calcFinance(proj)};
+  markFinanceDirty(proj); proj.finance = {...proj.finance, ...calcFinance(proj)};
   addLog(`[建物規模] ${BUILDING_SCALES[scale].label}を選択`);
   renderProjectDetail(projId);
 }
@@ -4095,25 +4175,27 @@ function _setZoneRent(projId, zone, val){
   const proj = S.projects.find(p=>p.id===projId);
   if(!proj.zoneRents) proj.zoneRents = {};
   proj.zoneRents[zone] = parseInt(val);
-  proj.finance = {...proj.finance, ...calcFinance(proj)};
+  markFinanceDirty(proj); proj.finance = {...proj.finance, ...calcFinance(proj)};
   renderProjectDetail(projId);
 }
+// デバウンス版（スライダーから呼ぶ用）
+const _setZoneRentDebounced = debounce(function(projId, zone, val){ _setZoneRent(projId, zone, val); }, 120);
 
 function _setConceptSlider(projId,key,val){
   const proj=S.projects.find(p=>p.id===projId);
   proj.concept[key]=parseInt(val);
-  const c=proj.concept;
-  const t=(c.housing||0)+(c.commercial||0)+(c.office||0)+(c.hotel||0)+(c.plaza||0);
-  proj.finance={...proj.finance,...calcFinance(proj)};
+  markFinanceDirty(proj); proj.finance={...proj.finance,...calcFinance(proj)};
   renderProjectDetail(projId);
 }
+// デバウンス版（スライダーから呼ぶ用）
+const _setConceptSliderDebounced = debounce(function(projId,key,val){ _setConceptSlider(projId,key,val); }, 120);
 
 function _applyTheme(projId,themeId){
   const proj=S.projects.find(p=>p.id===projId);
   const theme=CONCEPT_THEMES.find(t=>t.id===themeId);
   if(!theme) return;
   proj.concept={...proj.concept,theme:themeId,housing:theme.housing,commercial:theme.commercial,office:theme.office,hotel:0,plaza:theme.plaza};
-  proj.finance={...proj.finance,...calcFinance(proj)};
+  markFinanceDirty(proj); proj.finance={...proj.finance,...calcFinance(proj)};
   notify('テーマ「'+theme.label+'」を適用しました','info');
   renderProjectDetail(projId);
 }
@@ -4434,7 +4516,7 @@ function showTitleScreen(){
 function startGame(mode){
   document.getElementById('title-overlay').classList.remove('show');
   initState(mode);
-  renderAll();
+  _renderAllImmediate();
   updateSeason();
   renderTopbar();
   checkTurnLimit();
@@ -4450,6 +4532,7 @@ return {
   negotiateOwner,consultGov,applyVolumeBonus,togglePublicContrib,
   toggleTenant,applySoftMeasure,setContractor,
   _setConcept,_setConceptSlider,_applyTheme,_selectLo,_setOfficePlan,_setBuildingScale,_setZoneRent,_selectHotel,_setHousingType,_setTenantRent,
+  _setConceptSliderDebounced,_setZoneRentDebounced,_setTenantRentDebounced,_setHousingTypeDebounced,
   _selectProject,_finishProject,_restart,
   showNewProjectModalForArea,
   showHelp,_closeHelp,
